@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Aug 11 06:44:23 2023
-
-@author: levih
-"""
-
 import pandas as pd
 
 def compare_excel_sheets(file1_path, file2_path):
@@ -23,16 +16,16 @@ def compare_excel_sheets(file1_path, file2_path):
         try:
             row2 = df2.iloc[index]
         except IndexError:
-            changes.append(f"Row {index + 1} from {file1_path} is not present in {file2_path}.")
+            changes.append(f"'{row['C']}' from {file1_path} is not present in {file2_path}.")
             continue
         
         if not row.equals(row2):
-            changes.append(f"Row {index + 1} is different between the files.")
+            changes.append(f"'{row['C']}' is different between the files.")
     
     # Check for extra rows in the second file
     if len(df2) > len(df1):
         for index in range(len(df1), len(df2)):
-            changes.append(f"Row {index + 1} from {file2_path} is not present in {file1_path}.")
+            changes.append(f"'{df2.iloc[index]['C']}' from {file2_path} is not present in {file1_path}.")
 
     return changes
 
