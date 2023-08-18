@@ -1,0 +1,62 @@
+from docx import Document
+import olefile
+import os
+
+def extract_embedded_docs(input_doc_path, temp_dir):
+    # Open the Word document
+    ole = olefile.OleFileIO(input_doc_path)
+
+    # Extract embedded documents
+    for item in ole.listdir():
+        if item[-1].endswith('.docx') or item[-1].endswith('.doc'):
+            file_data = ole.openstream(item).read()
+            temp_file_path = os.path.join(temp_dir, item[-1])
+            with open(temp_file_path, 'wb') as output_file:
+                output_file.write(file_data)
+                
+    ole.close()
+
+def merge_docs(temp_dir, output_doc_path):
+    # Create a new Word document
+    merged_doc = Document()
+    
+    # Loop through and merge each document in the temporary directory
+    for doc_name in os.listdir(temp_dir):
+        doc_path = os.path.join(temp_dir, doc_name)
+        doc = Document(doc_path)
+        
+        # Add a section break before adding content from next document
+        if len(merged_doc.sections) == 1:
+            merged_doc.add_section()
+        
+        for element in doc.element.body:
+            merged_doc.element.body.append(element)
+    
+    # Save the merged document
+    merged_doc.save(output_doc_path)
+
+def main():
+    # Specify the paths
+    input_doc_path = 'path/to/your/word/file/with/embedded/docs.docx'
+    temp_dir = 'path/to/temporary/directory/'
+    output_doc_path = 'path/to/save/merged/document.docx'
+    
+    # Create a temporary directory if it doesn't exist
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
+
+    # Extract embedded Word documents
+    extract_embedded_docs(input_doc_path, temp_dir)
+
+    # Merge extracted Word documents into a single document
+    merge_docs(temp_dir, output_doc_path)
+    
+    # Optionally: Remove the temporary directory after merging
+    for file in os.listdir(temp_dir):
+        os.remove(os.path.join(temp_dir, file))
+    os.rmdir(temp_dir)
+    
+    print("Merging completed successfully.")
+
+if __name__ == "__main__":
+    main()
